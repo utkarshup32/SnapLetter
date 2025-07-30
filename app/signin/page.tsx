@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 // Update the import path to the correct location or create the file if missing
 //import { createClient } from "../../lib/supabase/client.js";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
 
 
 
