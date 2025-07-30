@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 // Update the import path to the correct location or create the file if missing
-import { createClient } from "../../lib/supabase/client";
+//import { createClient } from "../../lib/supabase/client.js";
 import Link from "next/link";
 
 
@@ -54,8 +54,12 @@ export default function SignInPage() {
         if (error) throw error;
         router.push("/dashboard");
       }
-    } catch (error: any) {
-      setError(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("An unexpected error occurred.");
+      }
     } finally {
       setIsLoading(false);
     }
