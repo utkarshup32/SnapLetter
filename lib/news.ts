@@ -1,4 +1,7 @@
-
+/**
+ * Fetches articles from News API for the specified categories
+ * Returns articles from the past week, limited to 5 per category
+ */
 export async function fetchArticles(
   categories: string[]
 ): Promise<Array<{ title: string; url: string; description: string }>> {
