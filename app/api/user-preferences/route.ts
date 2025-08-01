@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-// Update the import path to the correct location of your Supabase client
 import { createClient } from "@/lib/supabase/server";
-import { inngest } from "@/lib/inngest/client";
+import { inngest } from "@/inngest/client";
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();

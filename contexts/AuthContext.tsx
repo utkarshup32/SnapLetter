@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       subscription.unsubscribe();
     };
-  }, [supabase.auth]);
+  }, []);
 
   const signOut = async () => {
     await supabase.auth.signOut();
@@ -67,8 +67,4 @@ export function useAuth() {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
-}
-export function useUser() {
-  const { user, loading } = useAuth();
-  return { user, loading };
 }

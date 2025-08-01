@@ -15,7 +15,7 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
+          cookiesToSet.forEach(({ name, value, options }) =>
             request.cookies.set(name, value)
           );
           supabaseResponse = NextResponse.next({
@@ -46,37 +46,12 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (
-    user &&
-    (request.nextUrl.pathname.startsWith("/select") ||
-      request.nextUrl.pathname.startsWith("/dashboard"))
-  ) {
-    try {
-      const res = await fetch(
-        new URL("/api/subscription-status", request.url),
-        { headers: { cookie: request.headers.get("cookie") || "" } }
-      );
-      const { active } = await res.json();
-
-      if (!active) {
-        const url = request.nextUrl.clone();
-        url.pathname = "/subscribe";
-        return NextResponse.redirect(url);
-      }
-    } catch (error) {
-      console.error("Subscription check failed:", error);
-      const url = request.nextUrl.clone();
-      url.pathname = "/subscribe";
-      return NextResponse.redirect(url);
-    }
-  }
-
   // IMPORTANT: You *must* return the supabaseResponse object as it is.
   // If you're creating a new response object with NextResponse.next() make sure to:
   // 1. Pass the request in it, like so:
   //    const myNewResponse = NextResponse.next({ request })
   // 2. Copy over the cookies, like so:
-  //    myNewResponse.cookies.setAll(supabaseResponse.cookies.getAll())
+  //    myNewResponse.cookies.setAll(cookiesToSet)
   // 3. Change the myNewResponse object to fit your needs, but avoid changing
   //    the cookies!
   // 4. Finally:

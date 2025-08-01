@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -48,23 +48,11 @@ const frequencyOptions = [
 export default function SelectPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedFrequency, setSelectedFrequency] = useState<string>("weekly");
-  const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const router = useRouter();
   const { user } = useAuth();
 
-  // useEffect(() => {
-  //   fetch("/api/subscription-status")
-  //     .then((r) => r.json())
-  //     .then((json) => {
-  //       if (!json.active) {
-  //         router.replace("/subscribe");
-  //       }
-  //     })
-  //     .catch(() => {
-  //       router.replace("/subscribe");
-  //     });
-  // }, [router]);
+
 
   const handleCategoryToggle = (categoryId: string) => {
     setSelectedCategories((prev) =>
@@ -104,7 +92,7 @@ export default function SelectPage() {
       }
 
       alert(
-        "Your newsletter preferences have been saved! You'll start receiving newsletters according to your schedule."
+        "Your newsletter preferences have been saved! You&apos;ll start receiving newsletters according to your schedule."
       );
       router.push("/dashboard");
     } catch (error) {

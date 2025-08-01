@@ -1,4 +1,4 @@
-import { inngest } from "@/lib/inngest/client";
+import { inngest } from "@/inngest/client";
 import { fetchArticles } from "@/lib/news";
 import emailjs from "@emailjs/nodejs";
 import { marked } from "marked";
