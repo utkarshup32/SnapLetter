@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { inngest } from "@/inngest/client";
+import { inngest, safeInngestSend } from "@/inngest/client";
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -21,69 +21,152 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { categories, frequency, email } = body;
 
+    console.log("Received preferences data:", { categories, frequency, email });
+
+    // Validate frequency
+    const validFrequencies = ['daily', 'weekly', 'biweekly'];
+    if (!validFrequencies.includes(frequency)) {
+      console.error("Invalid frequency:", frequency);
+      return NextResponse.json(
+        { error: `Invalid frequency: ${frequency}. Must be one of: ${validFrequencies.join(', ')}` },
+        { status: 400 }
+      );
+    }
+
+    // Validate categories
     if (!categories || !Array.isArray(categories) || categories.length === 0) {
       return NextResponse.json(
-        { error: "Categories array is required and must not be empty" },
+        { error: "At least one category must be selected" },
         { status: 400 }
       );
     }
 
-    if (!frequency || !["daily", "weekly", "biweekly"].includes(frequency)) {
+    // Validate email
+    if (!email || typeof email !== 'string') {
       return NextResponse.json(
-        { error: "Valid frequency is required (daily, weekly, biweekly)" },
+        { error: "Valid email is required" },
         { status: 400 }
       );
     }
 
-    // Save user preferences to database
-    const { error: upsertError } = await supabase
+    console.log("Validation passed, saving to database...");
+
+    // Check if user already has preferences
+    const { data: existingPreferences, error: checkError } = await supabase
       .from("user_preferences")
-      .upsert(
-        {
+      .select("id")
+      .eq("user_id", user.id)
+      .single();
+
+    if (checkError && checkError.code !== 'PGRST116') {
+      console.error("Error checking existing preferences:", checkError);
+      return NextResponse.json(
+        { error: "Database error while checking preferences" },
+        { status: 500 }
+      );
+    }
+
+    let data;
+    let upsertError;
+
+    if (existingPreferences) {
+      // Update existing preferences
+      console.log("Updating existing preferences...");
+      const { data: updateData, error: updateError } = await supabase
+        .from("user_preferences")
+        .update({
+          categories: categories,
+          frequency: frequency,
+          email: email,
+          is_active: true,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("user_id", user.id)
+        .select()
+        .single();
+      
+      data = updateData;
+      upsertError = updateError;
+    } else {
+      // Insert new preferences
+      console.log("Creating new preferences...");
+      const { data: insertData, error: insertError } = await supabase
+        .from("user_preferences")
+        .insert({
           user_id: user.id,
           categories: categories,
           frequency: frequency,
           email: email,
           is_active: true,
-        },
-        { onConflict: "user_id" }
-      );
+        })
+        .select()
+        .single();
+      
+      data = insertData;
+      upsertError = insertError;
+    }
 
     if (upsertError) {
-      console.error("Error saving preferences:", upsertError);
+      console.error("Database error:", upsertError);
+      
+      // Check if it's a constraint violation
+      if (upsertError.code === '23514') {
+        return NextResponse.json(
+          { error: `Invalid frequency value: ${frequency}. Please select a valid frequency.` },
+          { status: 400 }
+        );
+      }
+      
       return NextResponse.json(
-        { error: "Failed to save preferences" },
+        { error: `Failed to save preferences: ${upsertError.message}` },
         { status: 500 }
       );
     }
 
+    console.log("Successfully saved preferences:", data);
+
     // Schedule the first newsletter based on frequency
     let scheduleTime: Date;
     const now = new Date();
+
+    console.log("Calculating schedule time for frequency:", frequency);
 
     switch (frequency) {
       case "daily":
         // Schedule for tomorrow at 9 AM
         scheduleTime = new Date(now.getTime() + 24 * 60 * 60 * 1000);
         scheduleTime.setHours(9, 0, 0, 0);
+        console.log("Scheduled for daily at:", scheduleTime.toISOString());
         break;
       case "weekly":
         // Schedule for next week on the same day at 9 AM
         scheduleTime = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
         scheduleTime.setHours(9, 0, 0, 0);
+        console.log("Scheduled for weekly at:", scheduleTime.toISOString());
         break;
       case "biweekly":
         // Schedule for 3 days from now at 9 AM
         scheduleTime = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
         scheduleTime.setHours(9, 0, 0, 0);
+        console.log("Scheduled for biweekly at:", scheduleTime.toISOString());
         break;
       default:
         scheduleTime = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
         scheduleTime.setHours(9, 0, 0, 0);
+        console.log("Scheduled for default (weekly) at:", scheduleTime.toISOString());
     }
 
-    // Send event to Inngest to schedule the newsletter
-    const { ids } = await inngest.send({
+    // Check if Inngest is properly configured
+    if (!process.env.INNGEST_SIGNING_KEY) {
+      console.warn("INNGEST_SIGNING_KEY not set, skipping newsletter scheduling");
+      return NextResponse.json({
+        success: true,
+        message: "Preferences saved (newsletter scheduling skipped - missing Inngest key)",
+      });
+    }
+
+    // Send event to Inngest to schedule the newsletter using the safe function
+    const inngestResult = await safeInngestSend({
       name: "newsletter.schedule",
       data: {
         userId: user.id,
@@ -95,11 +178,20 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({
-      success: true,
-      message: "Preferences saved and newsletter scheduled",
-      scheduleId: ids[0],
-    });
+    if (inngestResult.success) {
+      console.log("Inngest event sent successfully:", inngestResult.ids);
+      return NextResponse.json({
+        success: true,
+        message: "Preferences saved and newsletter scheduled",
+      });
+    } else {
+      console.warn("Inngest event failed, but preferences were saved:", inngestResult.error);
+      return NextResponse.json({
+        success: true,
+        message: "Preferences saved (newsletter scheduling failed)",
+        warning: inngestResult.error,
+      });
+    }
   } catch (error) {
     console.error("Error in user-preferences API:", error);
     return NextResponse.json(
@@ -230,9 +322,9 @@ async function cancelUserNewsletterEvents(userId: string) {
 
 // Function to reschedule newsletter for a user when they reactivate
 async function rescheduleUserNewsletter(userId: string) {
-  const supabase = await createClient();
-
   try {
+    const supabase = await createClient();
+
     // Get user preferences
     const { data: preferences, error } = await supabase
       .from("user_preferences")
@@ -264,8 +356,14 @@ async function rescheduleUserNewsletter(userId: string) {
 
     nextScheduleTime.setHours(9, 0, 0, 0);
 
-    // Schedule the next newsletter
-    await inngest.send({
+    // Check if Inngest is properly configured before sending events
+    if (!process.env.INNGEST_SIGNING_KEY && process.env.NODE_ENV === "production") {
+      console.warn("INNGEST_SIGNING_KEY not set in production, skipping newsletter scheduling");
+      return;
+    }
+
+    // Schedule the next newsletter with error handling using the safe function
+    const inngestResult = await safeInngestSend({
       name: "newsletter.schedule",
       data: {
         userId: userId,
@@ -276,12 +374,17 @@ async function rescheduleUserNewsletter(userId: string) {
       ts: nextScheduleTime.getTime(),
     });
 
-    console.log(
-      `Rescheduled newsletter for user ${userId} at ${nextScheduleTime.toISOString()}`
-    );
+    if (inngestResult.success) {
+      console.log(
+        `Rescheduled newsletter for user ${userId} at ${nextScheduleTime.toISOString()}`
+      );
+    } else {
+      console.warn("Failed to reschedule newsletter:", inngestResult.error);
+    }
   } catch (error) {
     console.error("Error in rescheduleUserNewsletter:", error);
-    throw error;
+    // Don't throw the error - just log it
+    // This prevents the entire PATCH request from failing
   }
 }
 

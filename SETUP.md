@@ -18,7 +18,7 @@ Edit `.env.local` and add your API keys:
 
 ```env
 OPENAI_API_KEY=your_openai_api_key_here
-INGEST_SIGNING_KEY=your_inngest_signing_key_here
+INNGEST_SIGNING_KEY=your_inngest_signing_key_here
 NEWS_API_KEY=your_news_api_key_here
 ```
 
