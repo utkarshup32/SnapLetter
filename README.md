@@ -164,50 +164,16 @@ BEFORE UPDATE ON public.user_preferences
 FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 ```
 
-### Clone and Run
 
-```bash
-git clone https://github.com/yourusername/personalized-newsletter.git
-cd personalized-newsletter
-npm install
-```
 
-1. Copy `env.example` to `.env.local` and fill in your API credentials:
-
-```env
-# OpenAI API Key for AI summarization
-OPENAI_API_KEY=your_openai_api_key_here
-
-# Inngest signing key for webhook verification
-INGEST_SIGNING_KEY=your_inngest_signing_key_here
-
-# News API key for fetching articles
-NEWS_API_KEY=your_news_api_key_here
-
-# EmailJS configuration for sending newsletters
-EMAILJS_SERVICE_ID=your_emailjs_service_id_here
-EMAILJS_TEMPLATE_ID=your_emailjs_template_id_here
-EMAILJS_PUBLIC_KEY=your_emailjs_public_key_here
-
-# Supabase configuration
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-
-# Stripe configuration
-STRIPE_SECRET_KEY=your_stripe_secret_key
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
-STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
-```
-
-2. Start local Supabase emulation (optional):
+1. Start local Supabase emulation:
 
    ```bash
    supabase start
    supabase db push
    ```
 
-3. Run the development servers:
+2. Run the development servers:
 
    ```bash
    # Terminal 1 - Next.js App
@@ -217,7 +183,7 @@ STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
    npx inngest dev
    ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+3. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
@@ -291,11 +257,6 @@ A beautiful dashboard shows current preferences, newsletter status, and provides
 
 ---
 
-## 📄 License
-
-MIT License - see LICENSE file for details
-
----
 
 ## 🆘 Support
 
