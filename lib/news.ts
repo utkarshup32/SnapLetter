@@ -30,6 +30,7 @@ export async function fetchArticles(
         return [];
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return data.articles.slice(0, 5).map((article: any) => ({
         title: article.title || "No title",
         url: article.url || "#",

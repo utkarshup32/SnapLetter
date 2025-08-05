@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Inngest } from "inngest";
-import { inngest } from "@/inngest/client";
 
 const INNGEST_API = "http://localhost:8288/v1";
 
@@ -21,7 +19,7 @@ async function getRuns(eventId: string) {
 
 /** Poll until the first run is Completed/Failed/Cancelled */
 async function getRunOutput(eventId: string) {
-  let runs = await getRuns(eventId);
+  const runs = await getRuns(eventId);
   if (!runs.length) {
     throw new Error("No runs found for event");
   }
@@ -63,6 +61,7 @@ export async function GET(request: NextRequest) {
       result: run.output,
       error: run.output?.error || undefined,
     });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
     console.error("Error in status route:", e);
     return NextResponse.json({ error: e.message }, { status: 500 });

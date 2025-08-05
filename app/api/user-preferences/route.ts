@@ -198,6 +198,8 @@ async function cancelUserNewsletterEvents(userId: string) {
     const events = await response.json();
 
     // Filter events for this user that are newsletter.schedule events
+    // 203: Suppress 'any' warning if you use 'any' for event data
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const userNewsletterEvents =
       events.data?.filter(
         (event: any) =>
@@ -283,7 +285,7 @@ async function rescheduleUserNewsletter(userId: string) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   const supabase = await createClient();
 
   // Get the user session

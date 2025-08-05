@@ -51,6 +51,7 @@ export default function SignInPage() {
         if (error) throw error;
         router.push("/dashboard");
       }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       setError(error.message);
     } finally {
