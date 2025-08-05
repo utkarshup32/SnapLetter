@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { inngest, safeInngestSend } from "@/inngest/client";
+import {  safeInngestSend } from "@/inngest/client";
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -291,7 +291,7 @@ async function cancelUserNewsletterEvents(userId: string) {
 
     // Filter events for this user that are newsletter.schedule events
     // 203: Suppress 'any' warning if you use 'any' for event data
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
     const userNewsletterEvents =
       events.data?.filter(
         (event: any) =>

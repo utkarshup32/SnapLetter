@@ -419,6 +419,29 @@ export default function SelectPage() {
 					</div>
 				</div>
 			)}
+			{selectedCategories.length === 0 && (
+				<div className="fixed inset-0 bg-white/90 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+					<div className="bg-white rounded-3xl shadow-md max-w-md w-full p-6">
+						<div className="text-center">
+							<svg className="w-16 h-16 mx-auto mb-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l2-2m-2 2h18M9 12l2-2m0 0l2-2m-2 2h10M15 12l2-2m0 0l2-2m-2 2h6" />
+							</svg>
+							<h2 className="text-xl font-bold text-slate-900 mb-2">
+								No Categories Selected
+							</h2>
+							<p className="text-slate-600 text-sm mb-4">
+								You don&apos;t have any preferences selected.
+							</p>
+							<button
+								onClick={() => router.push("/dashboard")}
+								className="px-4 py-2 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-semibold transition-all duration-300 hover:from-blue-600 hover:to-indigo-600"
+							>
+								Go to Dashboard
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }

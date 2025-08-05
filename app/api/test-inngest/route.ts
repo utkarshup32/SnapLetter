@@ -47,4 +47,4 @@ export async function GET() {
     signingKeyPresent: !!process.env.INNGEST_SIGNING_KEY,
     environment: process.env.NODE_ENV,
   });
-} 
+}
