@@ -2,10 +2,7 @@
 
 <div align="center">
   <br />
-  <a href="https://youtu.be/ugxI1o5SyMs" target="_blank">
-    <img width="1280" height="720" alt="Copy of Copy of Copy of Copy of Copy of Copy of Copy of Copy of Copy of Copy of Copy of Copy of Copy of Copy of Copy of Copy of Copy of Copy of Copy of 10,000 REACT COMPONENTS (2)" src="https://github.com/user-attachments/assets/07311922-ae83-42a1-99c7-cfd243ebbe2c" />
 
-  </a>
   <br />
   <div>
     <img src="https://img.shields.io/badge/-Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white" alt="Next.js" />
@@ -15,10 +12,7 @@
     <img src="https://img.shields.io/badge/-TailwindCSS-06B6D4?style=for-the-badge&logo=tailwindcss" alt="Tailwind CSS" />
   </div>
   <h3 align="center">Build a Personalized AI Newsletter SaaS with Next.js, Supabase, OpenAI & Inngest</h3>
-  <div align="center">
-    Follow the full video tutorial on  
-    <a href="https://youtu.be/YOUR_VIDEO_ID" target="_blank"><b>YouTube</b></a>
-  </div>
+
   <br />
 </div>
 
